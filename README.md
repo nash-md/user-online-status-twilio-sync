@@ -2,7 +2,7 @@
 
 A user online status demo built with Twilio Sync and Twilio Client. The demo utilizes Twilio Sync - a real-time state synchronization engine - to keep the server in sync with with the online presents of the users on a browser. This synchronized state enables us to control incoming phone calls to a Twilio number. If the user is online the caller is connected to the Twilio Client WebRTC phone via TwiML. In the case that the user is offline the server returns a TwiML response to the caller with a text-to-speech message the user it not available right now.
 
-<img src="https://github.com/nash-md/twilio-sync-status-overview.webm" alt="Twilio Sync Demo" width="616" height="419">
+<img src="twilio-sync-status-overview.webm" alt="Twilio Sync Demo" width="616" height="419">
 
 ## Install - On Your Own Server or Machine
 
@@ -15,7 +15,7 @@ Open https://www.twilio.com/console/sync/services and create a new Service.
 **Important**
 Please mark the reachability checkbox, with this setting enabled, Twilio will later request the webhook and update us if a new user establishes a WebSocket connection an is available.
 
-<img src="https://github.com/nash-md/twilio-sync-status-service-setup.png" alt="Twilio Sync / Phone" width="888">
+<img src="twilio-sync-status-service-setup.png" alt="Twilio Sync / Phone" width="888">
 
 Set the Sync Service webhook Url to `http://<your_application_domain>/api/sync-callback` Twilio will request this address if the reachabilty of an endpoint changes.
 
@@ -55,7 +55,7 @@ After the server is started open `https://<your_application_name>` in your brows
 
 Configure a Twilio number for inbound calls. Point the webhook to `https://<your_application_name>/api/phone/incoming` and add the username you want to call as a GET parameter; example `https://<your_application_name>/api/phone/incoming?name=alice`
 
-<img src="https://github.com/nash-md/twilio-sync-status-phone-number-setup.png" alt="Twilio Phone Number Setup" width="888">
+<img src="twilio-sync-status-phone-number-setup.png" alt="Twilio Phone Number Setup" width="888">
 
 Now call the Twilio number, if the called user is online on at least one endpoint the TwiML document will redirect the call to the user's browser, else the alternative TwiML is played.  
 
