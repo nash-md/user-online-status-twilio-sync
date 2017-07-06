@@ -2,7 +2,7 @@
 
 A user online status demo built with Twilio Sync and Twilio Client. The demo utilizes Twilio Sync - a real-time state synchronization engine - to keep the server in sync with with the online presents of the users on a browser. This synchronized state enables us to control incoming phone calls to a Twilio number. If the user is online the caller is connected to the Twilio Client WebRTC phone via TwiML. In the case that the user is offline the server returns a TwiML response to the caller with a text-to-speech message the user it not available right now.
 
-<img src="twilio-sync-status-overview.webm" alt="Twilio Sync Demo" width="616" height="419">
+<img src="twilio-sync-status-overview.gif" alt="Twilio Sync Demo" width="480" height="381">
 
 ## Install - On Your Own Server or Machine
 
