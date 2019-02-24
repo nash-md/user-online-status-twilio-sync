@@ -27,7 +27,7 @@ module.exports.setConfiguration = function (configuration, callback) {
 			callback(err)
 		} else {
 
-			// sync status to server
+			// sync state to server
 			utilRemoteSync.update(process.env.TWILIO_SYNC_DOCUMENT, configuration)
 				.then(doc => {
 					callback(null, doc)
@@ -41,7 +41,7 @@ module.exports.setConfiguration = function (configuration, callback) {
 
 }
 
-module.exports.setUserStatus = function (identity, state, callback) {
+module.exports.setUserState = function (identity, state, callback) {
 	console.log('update: ' + identity + ' - state "' + state + '"')
 
 	module.exports.getConfiguration(function (error, configuration) {
@@ -51,7 +51,7 @@ module.exports.setUserStatus = function (identity, state, callback) {
 
 			let user = module.exports.getUser(identity, configuration)
 
-			user.status = state
+			user.state = state
 			user.updatedAt = new Date()
 
 			configuration.users[identity] = user
@@ -63,7 +63,7 @@ module.exports.setUserStatus = function (identity, state, callback) {
 	})
 }
 
-module.exports.updateUserStatus = function (identity, event, callback) {
+module.exports.updateUserState = function (identity, event, callback) {
 	console.log('update: ' + identity + ' - event "' + event + '"')
 
 	module.exports.getConfiguration(function (error, configuration) {
@@ -85,12 +85,12 @@ module.exports.updateUserStatus = function (identity, event, callback) {
 
 			/* no endpoints anymore, set agent offline */
 			if (user.endpoints === 0) {
-				user.status = 'offline'
+				user.state = 'unavailable'
 			}
 
 			/* the agent was offline and now went online, put agent to online */
 			if (user.endpoints === 1 && event === 'endpoint_connected') {
-				user.status = 'online'
+				user.state = 'available'
 			}
 
 			user.updatedAt = new Date()
@@ -109,7 +109,7 @@ module.exports.getUser = function (identity, configuration) {
 	let user = null
 
 	if (configuration.users[identity] === undefined) {
-		user = { endpoints: 0, status: null }
+		user = { endpoints: 0, state: null }
 	} else {
 		user = configuration.users[identity]
 	}

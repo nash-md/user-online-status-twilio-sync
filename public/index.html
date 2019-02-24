@@ -1,10 +1,12 @@
 <!DOCTYPE HTML>
 <html>
+
 <head>
 	<meta charset="utf-8">
 	<title>Sync Presence Demo</title>
 
-	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css"
+		integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
 
 </head>
 
@@ -12,70 +14,97 @@
 
 	<div class="container" ng-controller="IndexController">
 
-		<div class="row" ng-hide="name">
+		<div class="row" ng-hide="identity">
 			<div class="col-md-3">&nbsp;</div>
-		  <div class="col-md-6">
+			<div class="col-md-6">
 
-		  	<div class="page-header">
+				<div class="page-header">
 					<h1>Sync Presence - Setup</h1>
 				</div>
 
-		    <div class="input-group input-group-lg">
-		      <input class="form-control" ng-model="identity" name="identity" autocomplete="off" ng-minlength="3" ng-maxlength="20" ng-required="true" type="text">
-		      <span class="input-group-btn">
-		        <button class="btn btn-primary" type="button" ng-click="start()">Go!</button>
-		      </span>
-		    </div>
-		  </div>
+				<div class="input-group input-group-lg">
+					<input class="form-control" ng-model="name" name="name" autocomplete="off" ng-minlength="3" ng-maxlength="20"
+						ng-required="true" type="text">
+					<span class="input-group-btn">
+						<button class="btn btn-primary" type="button" ng-click="start()">Go!</button>
+					</span>
+				</div>
+			</div>
 		</div>
 
-		<div class="row" ng-show="name">
+		<div class="row" ng-show="identity">
 			<div class="col-md-3">&nbsp;</div>
-		  <div class="col-md-6">
+			<div class="col-md-6">
 
-		  	<div class="page-header">
-					<h1>{{name}} - Sync Presence</h1>
+				<div class="page-header">
+					<h1>{{identity}} - Sync Presence</h1>
 				</div>
 
 				<div ng-controller="PhoneController" class="panel panel-default">
-				  <div class="panel-heading">
-				    <h3 class="panel-title">Twilio Client</h3>
-				  </div>
-				  <div class="panel-body">
-				    State: {{state}}
-				  </div>
+					<div class="panel-heading">
+						<h3 class="panel-title">Twilio Client</h3>
+					</div>
+					<div class="panel-body">
+						<p>State: {{state}}</p>
+
+						<div ng-if="state == 'incoming'">
+							Incoming call from {{phoneNumber}} <button class="btn btn-success" type="button"
+								ng-click="accept()">Accept</button>
+						</div>
+
+						<div ng-if="state == 'idle'">
+
+							<div class="input-group input-group-lg">
+								<input class="form-control" ng-model="phoneNumber" ng-minlength="3" ng-maxlength="20" ng-required="true"
+									type="text">
+								<span class="input-group-btn">
+									<button class="btn btn-success" type="button" ng-click="call()">Call</button>
+								</span>
+							</div>
+
+						</div>
+
+						<div ng-if="state == 'busy'">
+							<button class="btn btn-danger" type="button" ng-click="disconnect()">Hang up</button>
+						</div>
+
+					</div>
+
 				</div>
 
 				<div ng-controller="SyncController" class="panel panel-default">
-				  <div class="panel-heading">
-				    <h3 class="panel-title">Twilio Sync</h3>
-				  </div>
-				  <div class="panel-body">
-				    State: {{state}}
-				  </div>
+					<div class="panel-heading">
+						<h3 class="panel-title">Twilio Sync</h3>
+					</div>
+					<div class="panel-body">
+						State: {{state}}
+					</div>
 
-				  <div class="panel-heading">
-				    <h3 class="panel-title">Users</h3>
-				  </div>
-		
-				   <ul class="list-group"> 	
-						  <li ng-repeat="(key, value) in users" class="list-group-item">
-						  	<span class="label" ng-class="{'label-success': value.status == 'online', 'label-danger': value.status == 'offline', 'label-warning': value.status == 'busy' }">{{value.status}}</span> {{key}} - endpoints: {{value.endpoints}}</li>
-						</ul>
-				 </div>
-			
-		  </div>
+					<div class="panel-heading">
+						<h3 class="panel-title">Users</h3>
+					</div>
+
+					<ul class="list-group">
+						<li ng-repeat="(key, value) in users" class="list-group-item">
+							<span class="label"
+								ng-class="{'label-success': value.state == 'available', 'label-danger': value.state == 'unavailable', 'label-warning': value.state == 'busy' }">{{value.state}}</span>
+							{{key}} - endpoints: {{value.endpoints}}</li>
+					</ul>
+				</div>
+
+			</div>
 		</div>
 
 	</div>
 
-	<script src="//media.twiliocdn.com/sdk/js/sync/v0.5/twilio-sync.min.js"></script>
-	<script src="//media.twiliocdn.com/sdk/js/client/v1.4/twilio.min.js"></script>
+	<script src="//media.twiliocdn.com/sdk/js/sync/releases/0.9.2/twilio-sync.min.js"></script>
+	<script src="//media.twiliocdn.com/sdk/js/client/releases/1.6.9/twilio.min.js"></script>
 
 	<script src="/scripts/angular.min.js"></script>
 	<script src="IndexController.js"></script>
 	<script src="PhoneController.js"></script>
 	<script src="SyncController.js"></script>
-	
+
 </body>
+
 </html>

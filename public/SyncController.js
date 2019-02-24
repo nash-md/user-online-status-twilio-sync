@@ -1,5 +1,5 @@
 function SyncController ($scope, $http, $timeout, $log, $window) {
-	$scope.state = 'Sync Client: offline';
+	$scope.state = 'unknown';
 	$scope.documentName = null;
 	$scope.client = null;
 
@@ -9,10 +9,10 @@ function SyncController ($scope, $http, $timeout, $log, $window) {
 		$scope.documentName = data.documentName;
 
 		try {
-			$scope.client = new Twilio.Sync.Client(data.token);
+			$scope.client = new Twilio.Sync.Client(data.token, { logLevel: 'debug' });
 		} catch (error) {
 			$log.error(error);
-			$scope.state = 'Error';
+			$scope.state = 'error';
 		}
 
 		$scope.state = 'Sync Client: connecting...';
@@ -29,6 +29,15 @@ function SyncController ($scope, $http, $timeout, $log, $window) {
 
 		});
 
+		$scope.client.on('tokenExpired', function() {
+			$log.log('Sync Client: token expired')
+			$scope.state = 'offline';
+			$scope.users = null;
+			$scope.client = null;
+
+			$scope.$apply();
+		}); 
+
 	});
 
 	$scope.syncPresenceList = function () {
@@ -39,9 +48,9 @@ function SyncController ($scope, $http, $timeout, $log, $window) {
 				$scope.users = document.value.users;
 				$scope.$apply();
 
-				document.on('updatedRemotely',function (data) {
-					$log.log('update remotely ... %o', data);
-					$scope.users = data.users;
+				document.on('updated',function (data) {
+					$log.log('remote update ... %o', data);
+					$scope.users = data.value.users;
 					$scope.$apply();
 				});
 			}).catch(function (error) {

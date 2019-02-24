@@ -1,7 +1,7 @@
 {
   "name": "user-online-status-with-sync",
   "description": "Twilio Sync Online Status Demo",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "author": "Matthias Damm",
   "contributors": [],
   "license": "MIT",
@@ -9,14 +9,14 @@
   "private": true,
   "keywords": [],
   "dependencies": {
-    "body-parser": "^1.15.1",
-    "compression": "^1.6.2",
-    "express": "^4.15.3",
-    "express-session": "^1.13.0",
-    "twilio": "3.4.0-alpha-1"
+    "body-parser": "^1.18.3",
+    "compression": "^1.7.3",
+    "express": "^4.16.4",
+    "express-session": "^1.15.6",
+    "twilio": "3.28.1"
   },
   "engines": {
-    "node": "^6.5.x"
+    "node": "10.x"
   },
   "scripts": {
     "start": "node app.js",

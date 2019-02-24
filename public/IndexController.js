@@ -1,7 +1,7 @@
-function IndexController ($scope, $http, $timeout, $log, $window, $rootScope) {
+function IndexController ($scope, $http, $log) {
+	$scope.name = '';
 	$scope.identity = null;
 	$scope.endpoint = null;
-	$scope.name = null;
 
 	$scope.getDeviceId = function () {
 		return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
@@ -12,20 +12,22 @@ function IndexController ($scope, $http, $timeout, $log, $window, $rootScope) {
 	};
 
 	$scope.start = function () {
-		$scope.name = $scope.identity;
+		$scope.identity = $scope.name;
 
-		const payload = { identity: $scope.name, endpoint: $scope.getDeviceId() };
+		const payload = { identity: $scope.identity, endpoint: $scope.getDeviceId() };
 
 		$http.post('/api/phone/token', payload)
 			.then(function onSuccess (response) {
+
 				/* initialize Twilio Client */
 				$scope.$broadcast('InitializePhone', {
-					token: response.data.tokens.phone
+					token: response.data.token,
+					identity: $scope.identity
 				});
 
 				/* initialize Twilio Sync */
 				$scope.$broadcast('InitializeSync', {
-					token: response.data.tokens.sync,
+					token: response.data.token,
 					documentName: response.data.documentName
 				});
 

@@ -6,11 +6,11 @@ A user online status demo built with Twilio Sync and Twilio Client. The demo uti
 
 ## Install - On Your Own Server or Machine
 
-This project requires [Node.js](http://nodejs.org/) 6 or greater.
+This project requires [Node.js](http://nodejs.org/) 10 or greater.
 
 ### Twilio Setup
 
-Open https://www.twilio.com/console/sync/services and create a new Service. 
+Open [Sync Service](https://www.twilio.com/console/sync/services) and create a new Service. 
 
 **Important**
 Please mark the reachability checkbox, with this setting enabled, Twilio will later request the webhook and update us if a new user establishes a WebSocket connection an is available.
@@ -29,7 +29,15 @@ npm install
 In order to run the demo you will need to set the following environment variables:
 
 - `TWILIO_ACCOUNT_SID`
-- `TWILIO_AUTH_TOKEN`
+
+API Keys can be provisioned on the [Twilio Console](https://www.twilio.com/console/voice/settings/api-keys). This provides a powerful and flexible way to manage acces to the Twilio API. Create a new key and create store it as environment variables.
+
+- `TWILIO_API_KEY_SID`
+- `TWILIO_API_KEY_SECRET`
+
+Create a new [TwiML App](https://www.twilio.com/console/voice/twiml/apps), configure the `Voice - Request Url` of your TwiML App to `http://<your_application_domain>/api/phone/outgoing` and create the environment variable with the TwiML App SID.
+
+- `TWILIO_APPLICATION_SID`
 
 ... and for Twilio Sync
 
@@ -61,7 +69,7 @@ Now call the Twilio number, if the called user is online on at least one endpoin
 
 **Note:** 
 
-Please create a separate sub-account within Twilio and install this app using that sub-account credentials.
+Please create a separate project on your Twilio Console and install this app using that project.
 
 On Google Chrome a secure HTTPS connection is required to do phone calls via WebRTC. Use a tunnel that supports HTTPS such as ngrok, which can forward the traffic to your webserver.
 

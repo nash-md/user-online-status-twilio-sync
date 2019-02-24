@@ -1,9 +1,33 @@
 const twilio = require('twilio')
 
-let AccessToken = twilio.jwt.AccessToken
-let SyncGrant = AccessToken.SyncGrant
+const AccessToken = twilio.jwt.AccessToken
+const SyncGrant = AccessToken.SyncGrant
+const VoiceGrant = AccessToken.VoiceGrant
 
 const util = require('./../util-file.js')
+
+module.exports.outgoing = function (req, res) {
+	console.log('Phone: Outbound Call to: ' + req.body.phoneNumber)
+
+	util.getConfiguration(function (error, configuration) {
+		let twiml = new twilio.twiml.VoiceResponse()
+		let dial = null
+
+		dial = twiml.dial({})
+
+		dial.number({
+			statusCallback: `${req.protocol}://${req.hostname}/api/phone/status-callback`,
+			statusCallbackEvent: 'initiated completed'
+		}, req.body.phoneNumber)
+
+		console.log('TwiML: ' + twiml.toString())
+
+		res.setHeader('Content-Type', 'application/xml')
+		res.setHeader('Cache-Control', 'public, max-age=0')
+		res.send(twiml.toString())
+	})
+
+}
 
 module.exports.incoming = function (req, res) {
 	console.log('Phone: Inbound Call for: ' + req.query.name)
@@ -13,17 +37,17 @@ module.exports.incoming = function (req, res) {
 		let twiml = new twilio.twiml.VoiceResponse()
 		let dial = null
 
-		switch (user.status) {
-		case 'online':
+		switch (user.state) {
+		case 'available':
 			dial = twiml.dial({})
 
 			dial.client({
 				statusCallback: `${req.protocol}://${req.hostname}/api/phone/status-callback`,
-				statusCallbackEvent: 'ringing answered completed'
+				statusCallbackEvent: 'initiated completed'
 			}, req.query.name)
 			break
 
-		case 'offline':
+		case 'unavailable':
 			twiml.say('The user is offline right now')
 			break
 
@@ -46,33 +70,45 @@ module.exports.incoming = function (req, res) {
 }
 
 module.exports.statusCallback = function (req, res) {
-	console.log('Phone: Status Callack CallSid: ' + req.body.CallSid + ' name: ' + req.body.To.substr(7) + ' status: ' + req.body.CallStatus)
+	let identity = null
+
+	if (req.body.From.includes('client')) {
+		identity = req.body.From.substr(7)
+	} else {
+		identity = req.body.To.substr(7)
+	}
+
+	console.log(`Phone: Status Callback CallSid: ${req.body.CallSid} identity: ${identity} status: ${req.body.CallStatus}`)
 
 	const status = req.body.CallStatus
-	const name = req.body.To.substr(7)
 
 	switch (status) {
-	case 'no-answer':
-		// set state to idle
-		util.setUserStatus(name, 'online', function (error) {
-			if (error) {
-				console.log(error)
-			}
-		})
-		break
-
 	case 'completed':
-		// set state to idle
-		util.setUserStatus(name, 'online', function (error) {
+		util.setUserState(identity, 'available', function (error) {
 			if (error) {
 				console.log(error)
 			}
 		})
 		break
 
-	case 'ringing':
-		// set state to idle
-		util.setUserStatus(name, 'busy', function (error) {
+	case 'no-answer':
+		util.setUserState(identity, 'available', function (error) {
+			if (error) {
+				console.log(error)
+			}
+		})
+		break
+
+	case 'busy':
+		util.setUserState(identity, 'available', function (error) {
+			if (error) {
+				console.log(error)
+			}
+		})
+		break
+
+	case 'initiated':
+		util.setUserState(identity, 'busy', function (error) {
 			if (error) {
 				console.log(error)
 			}
@@ -88,16 +124,10 @@ module.exports.statusCallback = function (req, res) {
 }
 
 module.exports.token = function (req, res) {
-	const lifetime = 1800
+	const lifetime = 3600
 
 	// create a unique ID for the client on their current device
 	let endpointId = `TwilioSyncDemo::${req.body.identity}:${req.body.endpoint}`
-
-	/* create token for Twilio Sync 	 */
-	let syncGrant = new SyncGrant({
-		serviceSid: process.env.TWILIO_SYNC_SERVICE_SID,
-		endpointId: endpointId
-	})
 
 	let accessToken = new AccessToken(
 		process.env.TWILIO_ACCOUNT_SID,
@@ -105,25 +135,22 @@ module.exports.token = function (req, res) {
 		process.env.TWILIO_API_KEY_SECRET,
 		{ ttl: lifetime })
 
-	accessToken.addGrant(syncGrant)
 	accessToken.identity = req.body.identity
 
-	/* create a token for Twilio Client */
-	const ClientCapability = twilio.jwt.ClientCapability
-
-	/* create a token for Twilio Client */
-	const phoneCapability = new ClientCapability({
-		accountSid: process.env.TWILIO_ACCOUNT_SID,
-		authToken: process.env.TWILIO_AUTH_TOKEN,
-		ttl: lifetime
+	/* create token for Twilio Sync */
+	let syncGrant = new SyncGrant({
+		serviceSid: process.env.TWILIO_SYNC_SERVICE_SID,
+		endpointId: endpointId
 	})
 
-	phoneCapability.addScope(new ClientCapability.IncomingClientScope(req.body.identity))
+	/* create token for Twilio Client */
+	const voiceGrant = new VoiceGrant({
+		incomingAllow: true,
+		outgoingApplicationSid: process.env.TWILIO_APPLICATION_SID
+	})
 
-	const tokens = {
-		phone: phoneCapability.toJwt(),
-		sync: accessToken.toJwt()
-	}
+	accessToken.addGrant(voiceGrant)
+	accessToken.addGrant(syncGrant)
 
-	res.json({ tokens: tokens, documentName: process.env.TWILIO_SYNC_DOCUMENT })
+	res.json({ token: accessToken.toJwt(), documentName: process.env.TWILIO_SYNC_DOCUMENT })
 }
